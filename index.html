@@ -37,7 +37,7 @@ a{color:inherit}
 .wrap{max-width:1240px;margin:0 auto;padding-left:max(20px, env(safe-area-inset-left, 0px));padding-right:max(20px, env(safe-area-inset-right, 0px))}
 
 /* HERO: pantalla completa. Vídeo entero (contain) y el hueco sobrante toma el color de fondo del vídeo en cada momento */
-.hero{position:relative;width:100%;flex:1 1 auto;min-height:0;background:#FCEDE2;overflow:hidden}
+.hero{position:relative;width:100%;flex:1 1 auto;min-height:0;background:#FFFFFF;overflow:hidden}
 .hero.live .stage{display:none}
 .stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--orange)}
 .stage .rings{position:absolute;left:50%;top:50%;width:0;height:0}
@@ -183,7 +183,7 @@ footer .contact a{text-decoration:none;user-select:all}
   var cv=document.createElement('canvas'); cv.width=cv.height=1;
   var cx=cv.getContext('2d',{willReadFrequently:true});
   function pick(){
-    var src=mq.matches?'video/miguelo-9x16.mp4':'video/miguelo-16x9.mp4';
+    var src=mq.matches?'video/miguelo-blanco-9x16.mp4':'video/miguelo-blanco-16x9.mp4';
     if(src===cur) return; cur=src;
     v.classList.remove('ok'); v.src=src; v.load();
     v.oncanplay=function(){v.oncanplay=null;
