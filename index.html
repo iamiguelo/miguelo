@@ -104,7 +104,13 @@ body.pide-toque .dedo .onda{animation:onda 2.4s ease-out infinite}
 body.contacto-visible .guardar{opacity:1;transform:none;pointer-events:auto}
 .guardar:hover{background:var(--rojo);color:#fff}
 
-footer{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom));text-align:center;font-size:11px;letter-spacing:.12em;color:#b3a398;z-index:1}
+footer{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom));text-align:center;font-size:11px;letter-spacing:.12em;color:#b3a398;z-index:1;transition:color 1.6s}
+
+/* fondo generado con IA en cada visita (functions/bg.js); si no llega, se queda el fondo crema */
+#fondo{position:fixed;inset:-8%;z-index:-1;background:center/cover no-repeat;filter:blur(22px) saturate(1.15);transform:scale(1.04);
+  opacity:0;transition:opacity 1.8s ease,transform 6s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+body.con-fondo #fondo{opacity:1;transform:none}
+body.con-fondo footer{color:rgba(255,255,255,.85);text-shadow:0 1px 6px rgba(0,0,0,.35)}
 
 @media (prefers-reduced-motion:reduce){
   .tarjeta,.inclina{transition:none}
@@ -113,6 +119,7 @@ footer{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bott
 </style>
 </head>
 <body>
+<div id="fondo" aria-hidden="true"></div>
 <h1 class="sr-only">Miguelo, estratega de ecommerce e IA creativa para marcas y tiendas online</h1>
 
 <main class="escena" id="escena">
@@ -183,6 +190,21 @@ footer{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bott
   }
   tarjeta.addEventListener('click',function(e){if(!e.target.closest('a'))girar();});
   tarjeta.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();girar();}});
+
+  // fondo con IA: una imagen nueva en cada visita (no en conexiones con ahorro de datos)
+  (function(){
+    var c=navigator.connection; if(c&&c.saveData)return;
+    if(!window.fetch||!window.URL)return;
+    fetch('/bg?'+Date.now(),{cache:'no-store'}).then(function(r){
+      if(r.status!==200||(r.headers.get('Content-Type')||'').indexOf('image/')!==0)return;
+      return r.blob().then(function(b){
+        var url=URL.createObjectURL(b), img=new Image();
+        img.onload=function(){document.getElementById('fondo').style.backgroundImage='url('+url+')';
+          requestAnimationFrame(function(){document.body.classList.add('con-fondo');});};
+        img.src=url;
+      });
+    }).catch(function(){});
+  })();
 
   // en ordenador la tarjeta se inclina un poco siguiendo el ratón
   if(matchMedia('(hover:hover) and (pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches){

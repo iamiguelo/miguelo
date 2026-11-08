@@ -1,0 +1,84 @@
+// Fondo generado con IA para miguelo.com
+// GET /bg -> una imagen nueva (JPEG) creada en el momento con FLUX schnell (Workers AI).
+// No se guarda en ningún sitio. Si algo falla, responde 204 y la web se queda con su fondo de siempre.
+//
+// Necesita un binding de Workers AI llamado "AI" en el proyecto de Cloudflare Pages
+// (Settings > Bindings > Add > Workers AI > nombre: AI), en Production y en Preview.
+
+const LIMITE_POR_IP = 6;        // imágenes por IP...
+const VENTANA_SEG = 60 * 60;    // ...cada hora
+const PASOS = 4;                // 4 pasos: lo mínimo que da buen resultado y lo más barato
+
+const BOTS = /bot|crawl|spider|slurp|curl|wget|python|httpclient|headless|lighthouse|preview|facebookexternalhit|whatsapp|telegram|discord|monitor|scan/i;
+
+// ingredientes del prompt: cada visita sale una combinación distinta
+const ESCENAS = [
+  'a crowd of young people crossing a neon-lit street at night, seen from above',
+  'a skateboarder mid-air in front of a huge abstract mural',
+  'friends laughing on a rooftop at golden hour, city skyline behind',
+  'a dancer frozen mid-move in a subway station',
+  'a person with headphones walking through rain-soaked city lights',
+  'a busy night market full of people and glowing lanterns',
+  'a cyclist speeding through a tunnel of light trails',
+  'a group of creatives sketching on a giant wall in a warehouse studio',
+  'a woman in streetwear surrounded by floating holographic shapes',
+  'a basketball court at dusk with silhouettes of players',
+  'a portrait of a man in a hoodie lit by colorful screens',
+  'people dancing at an open-air party under spotlights',
+];
+const ESTILOS = [
+  'surreal generative art, liquid chrome and glass shapes',
+  'double exposure with flowing particles and light',
+  'risograph poster aesthetic, bold grain and halftone',
+  'dreamy cinematic photography, heavy bokeh, motion blur',
+  'collage of torn paper and photography, editorial graphic design',
+  '3D render with iridescent materials and soft volumetric light',
+  'glitch art with chromatic aberration and data streams',
+  'vaporwave dreamscape with soft gradients',
+];
+const PALETAS = [
+  'electric orange and deep navy',
+  'tangerine, hot pink and violet',
+  'coral red and teal',
+  'black, neon orange and warm white',
+  'peach, lilac and electric blue',
+  'burnt orange and emerald green',
+];
+
+const azar = (lista) => lista[Math.floor(Math.random() * lista.length)];
+const nada = (motivo) => new Response(null, { status: 204, headers: { 'Cache-Control': 'no-store', 'X-Fondo': motivo } });
+
+export async function onRequestGet({ request, env, waitUntil }) {
+  if (!env.AI) return nada('sin-binding');
+
+  // 1) fuera bots y peticiones que no vengan de la propia web
+  const ua = request.headers.get('User-Agent') || '';
+  if (!ua || BOTS.test(ua)) return nada('bot');
+  const sitio = request.headers.get('Sec-Fetch-Site');
+  if (sitio && sitio !== 'same-origin') return nada('origen');
+
+  // 2) límite por IP (contador en la caché del centro de datos de Cloudflare, sin base de datos)
+  const ip = request.headers.get('CF-Connecting-IP') || 'desconocida';
+  const clave = new Request('https://limite.miguelo.internal/bg/' + encodeURIComponent(ip));
+  const cache = caches.default;
+  const previo = await cache.match(clave);
+  const usadas = previo ? parseInt(await previo.text(), 10) || 0 : 0;
+  if (usadas >= LIMITE_POR_IP) return nada('limite');
+  waitUntil(cache.put(clave, new Response(String(usadas + 1), { headers: { 'Cache-Control': 'max-age=' + VENTANA_SEG } })));
+
+  // 3) generar
+  const prompt = `${azar(ESCENAS)}, ${azar(ESTILOS)}, color palette ${azar(PALETAS)}, `
+    + 'vibrant, high contrast, atmospheric, award-winning graphic design, full-bleed background, '
+    + 'no text, no letters, no words, no logos, no watermark';
+  try {
+    const r = await env.AI.run('@cf/black-forest-labs/flux-1-schnell', { prompt, steps: PASOS });
+    if (!r || !r.image) return nada('vacia');
+    const bytes = Uint8Array.from(atob(r.image), (c) => c.charCodeAt(0));
+    return new Response(bytes, {
+      headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' },
+    });
+  } catch (e) {
+    // filtro del modelo, cuota gratuita agotada, etc.: la web sigue con su fondo normal
+    return nada('error');
+  }
+}
