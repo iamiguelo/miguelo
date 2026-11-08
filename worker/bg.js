@@ -2,8 +2,7 @@
 // GET /bg -> una imagen nueva (JPEG) creada en el momento con FLUX schnell (Workers AI).
 // No se guarda en ningún sitio. Si algo falla, responde 204 y la web se queda con su fondo de siempre.
 //
-// Necesita un binding de Workers AI llamado "AI" en el proyecto de Cloudflare Pages
-// (Settings > Bindings > Add > Workers AI > nombre: AI), en Production y en Preview.
+// Los bindings (AI y LIMITE) se declaran en wrangler.jsonc: no hay que tocar nada en el panel.
 
 const LIMITE_POR_IP = 6;        // imágenes por IP...
 const VENTANA_SEG = 60 * 60;    // ...cada hora
@@ -48,7 +47,7 @@ const PALETAS = [
 const azar = (lista) => lista[Math.floor(Math.random() * lista.length)];
 const nada = (motivo) => new Response(null, { status: 204, headers: { 'Cache-Control': 'no-store', 'X-Fondo': motivo } });
 
-export async function onRequestGet({ request, env, waitUntil }) {
+export async function fondo(request, env, waitUntil) {
   if (!env.AI) return nada('sin-binding');
 
   // 1) fuera bots y peticiones que no vengan de la propia web
@@ -57,7 +56,13 @@ export async function onRequestGet({ request, env, waitUntil }) {
   const sitio = request.headers.get('Sec-Fetch-Site');
   if (sitio && sitio !== 'same-origin') return nada('origen');
 
-  // 2) límite por IP (contador en la caché del centro de datos de Cloudflare, sin base de datos)
+  // 2) límite por IP: freno rápido (máx. 3 por minuto) con el rate limiter de Cloudflare...
+  const ipRapida = request.headers.get('CF-Connecting-IP') || 'desconocida';
+  if (env.LIMITE) {
+    const { success } = await env.LIMITE.limit({ key: ipRapida });
+    if (!success) return nada('limite-minuto');
+  }
+  // ...y tope por hora (contador en la caché del centro de datos de Cloudflare, sin base de datos)
   const ip = request.headers.get('CF-Connecting-IP') || 'desconocida';
   const clave = new Request('https://limite.miguelo.internal/bg/' + encodeURIComponent(ip));
   const cache = caches.default;
