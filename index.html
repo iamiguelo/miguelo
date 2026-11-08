@@ -86,11 +86,19 @@ body::before{content:"";position:fixed;left:50%;top:46%;width:min(120vw,900px);a
 
 /* debajo de la tarjeta */
 .bajo{position:relative;z-index:1;margin-top:clamp(28px,6vh,56px);display:flex;flex-direction:column;align-items:center;gap:14px;min-height:72px}
-.pista{color:#8a7a70;font-size:13px;letter-spacing:.08em;opacity:0;transition:opacity .6s}
-.pista.ver{opacity:1}
-.pista span{display:inline-block;animation:pulso 2s ease-in-out infinite}
-@keyframes pulso{50%{opacity:.45}}
-@media (hover:hover){.pista .t{display:none}} @media (hover:none){.pista .h{display:none}}
+.amago{transform-style:preserve-3d}
+body.pide-toque .amago{animation:amago 2.4s cubic-bezier(.3,.7,.3,1) infinite}
+@keyframes amago{0%,38%,70%,100%{transform:none}48%{transform:rotateY(-16deg) scale(.985)}58%{transform:rotateY(5deg)}}
+
+/* dedito que toca la tarjeta */
+.dedo{position:absolute;z-index:5;left:77%;top:80%;width:clamp(40px,13%,72px);pointer-events:none;opacity:0;transition:opacity .5s}
+body.pide-toque .dedo{opacity:1}
+.dedo .mano{display:block;width:100%;height:auto;filter:drop-shadow(0 6px 10px rgba(0,0,0,.25));transform-origin:46% 10%}
+body.pide-toque .dedo .mano{animation:toque 2.4s cubic-bezier(.3,.7,.3,1) infinite}
+@keyframes toque{0%{transform:translate(28%,34%) rotate(-8deg)}30%{transform:translate(0,0) rotate(-8deg)}40%{transform:translate(0,0) rotate(-8deg) scale(.82)}52%{transform:translate(0,0) rotate(-8deg) scale(1)}80%,100%{transform:translate(28%,34%) rotate(-8deg);opacity:1}}
+.dedo .onda{position:absolute;left:46%;top:8%;width:120%;aspect-ratio:1;border-radius:50%;border:2.5px solid #fff;transform:translate(-50%,-50%) scale(0);opacity:0}
+body.pide-toque .dedo .onda{animation:onda 2.4s ease-out infinite}
+@keyframes onda{0%,39%{transform:translate(-50%,-50%) scale(0);opacity:0}41%{opacity:.95}75%,100%{transform:translate(-50%,-50%) scale(1.15);opacity:0}}
 .guardar{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--rojo);border:1.5px solid var(--rojo);border-radius:999px;padding:9px 18px;
   opacity:0;transform:translateY(6px);transition:opacity .5s,transform .5s,background .2s,color .2s;pointer-events:none}
 body.contacto-visible .guardar{opacity:1;transform:none;pointer-events:auto}
@@ -100,7 +108,7 @@ footer{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bott
 
 @media (prefers-reduced-motion:reduce){
   .tarjeta,.inclina{transition:none}
-  .escena,.flota,.pista span,.delante.listo::after{animation:none}
+  .escena,.flota,.delante.listo::after,body.pide-toque .amago,body.pide-toque .dedo .mano,body.pide-toque .dedo .onda{animation:none}
 }
 </style>
 </head>
@@ -108,7 +116,7 @@ footer{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bott
 <h1 class="sr-only">Miguelo, estratega de ecommerce e IA creativa para marcas y tiendas online</h1>
 
 <main class="escena" id="escena">
-  <div class="inclina" id="inclina"><div class="flota">
+  <div class="inclina" id="inclina"><div class="flota"><div class="amago">
     <div class="tarjeta" id="tarjeta" role="button" tabindex="0" aria-label="Tarjeta de miguelo: toca para ver el contacto">
       <div class="cara delante" id="delante">
         <video id="intro" src="video/miguelo-tarjeta.mp4" poster="video/miguelo-tarjeta-final.jpg" muted playsinline preload="auto" aria-hidden="true"></video>
@@ -124,11 +132,24 @@ footer{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bott
         </div>
       </div>
     </div>
-  </div></div>
+  </div></div></div>
+  <div class="dedo" aria-hidden="true">
+    <span class="onda"></span>
+    <svg class="mano" viewBox="0 0 48 56">
+      <g fill="#1d1d1f" stroke="#1d1d1f" stroke-width="5" stroke-linejoin="round">
+        <rect x="18" y="4" width="9" height="30" rx="4.5"/><rect x="26" y="20" width="8" height="16" rx="4"/><rect x="33" y="23" width="8" height="15" rx="4"/>
+        <rect x="11" y="27" width="8" height="13" rx="4"/><path d="M11 34h30v6c0 8-6 13-14 13h-2c-8 0-14-5-14-13z"/>
+      </g>
+      <g fill="#fff">
+        <rect x="18" y="4" width="9" height="30" rx="4.5"/><rect x="26" y="20" width="8" height="16" rx="4"/><rect x="33" y="23" width="8" height="15" rx="4"/>
+        <rect x="11" y="27" width="8" height="13" rx="4"/><path d="M11 34h30v6c0 8-6 13-14 13h-2c-8 0-14-5-14-13z"/>
+      </g>
+    </svg>
+  </div>
 </main>
 
 <div class="bajo">
-  <p class="pista" id="pista"><span class="t">Toca la tarjeta ↻</span><span class="h">Haz clic en la tarjeta ↻</span></p>
+  <p class="sr-only">Toca la tarjeta para ver el contacto</p>
   <a class="guardar" href="miguelo.vcf" download="miguelo.vcf">Guardar contacto</a>
 </div>
 
@@ -137,10 +158,12 @@ footer{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bott
 <script>
 (function(){
   var tarjeta=document.getElementById('tarjeta'), delante=document.getElementById('delante'),
-      video=document.getElementById('intro'), pista=document.getElementById('pista'),
+      video=document.getElementById('intro'), yaGirada=false,
       escena=document.getElementById('escena'), inclina=document.getElementById('inclina');
 
-  function listo(){delante.classList.add('listo');if(!tarjeta.classList.contains('girada'))pista.classList.add('ver');}
+  function listo(){delante.classList.add('listo');
+    // el dedito aparece hasta que la persona gira la tarjeta por primera vez
+    if(!yaGirada&&!tarjeta.classList.contains('girada'))setTimeout(function(){if(!yaGirada)document.body.classList.add('pide-toque');},600);}
   function reproducir(){
     delante.classList.remove('listo');
     try{video.currentTime=0;}catch(e){}
@@ -148,14 +171,14 @@ footer{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bott
   }
   video.addEventListener('ended',listo);
   video.addEventListener('error',listo);
-  setTimeout(function(){if(!delante.classList.contains('listo'))listo();},12000);
+  setTimeout(function(){if(!delante.classList.contains('listo'))listo();},8000);
   reproducir();
 
   function girar(){
     var volver=tarjeta.classList.contains('girada');
     tarjeta.classList.toggle('girada');
     document.body.classList.toggle('contacto-visible',!volver);
-    pista.classList.remove('ver');
+    yaGirada=true; document.body.classList.remove('pide-toque');
     if(volver)setTimeout(reproducir,450); // al volver a la cara roja, el logo se monta otra vez
   }
   tarjeta.addEventListener('click',function(e){if(!e.target.closest('a'))girar();});
