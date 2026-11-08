@@ -1,5 +1,6 @@
 // miguelo.com: web estática + /bg (fondo generado con IA)
 import { fondo } from './bg.js';
+export { Contador } from './contador.js';
 
 export default {
   async fetch(request, env, ctx) {

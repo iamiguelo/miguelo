@@ -1,7 +1,7 @@
 {
   "name": "miguelo",
   "main": "worker/index.js",
-  "compatibility_date": "2026-11-01",
+  "compatibility_date": "2026-10-01",
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
@@ -12,5 +12,8 @@
   // freno por IP: máximo 3 imágenes por minuto
   "ratelimits": [
     { "name": "LIMITE", "namespace_id": "1001", "simple": { "limit": 3, "period": 60 } }
-  ]
+  ],
+  // contador global del tope diario (gasto 0 €) y última imagen
+  "durable_objects": { "bindings": [ { "name": "CONTADOR", "class_name": "Contador" } ] },
+  "migrations": [ { "tag": "v1", "new_sqlite_classes": ["Contador"] } ]
 }

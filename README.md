@@ -12,8 +12,8 @@ Es una web estática servida por un Worker de Cloudflare (static assets) desde l
 
 ## Fondo con IA (`worker/bg.js`)
 
-En cada visita la página pide `/bg`; el Worker genera al momento una imagen con FLUX schnell (Workers AI) y la pone de fondo, difuminada. No se guarda en ningún sitio. Si no hay imagen (límite, error o sin configurar), se queda el fondo crema.
+En cada visita la página pide `/bg`; el Worker genera al momento una imagen con FLUX schnell (Workers AI) y la pone de fondo, difuminada. Solo se guarda la última imagen buena (Durable Object `Contador`), que se enseña si se llega a un límite o falla algo. Si no hay ninguna, se queda el fondo crema.
 
 - Los bindings (`AI` y el limitador `LIMITE`) están en `wrangler.jsonc`.
 - Protecciones: fuera bots y peticiones de otras webs, máximo 3 imágenes por IP y minuto y 6 por hora, y `/bg` bloqueado en `robots.txt`.
-- Para no pagar nada: mantener Workers en el plan gratuito (10.000 neuronas al día; al agotarse, simplemente no hay fondo hasta el día siguiente).
+- Gasto 0 €: tope global de 120 imágenes al día (~6.900 de las 10.000 neuronas gratis diarias de Workers AI). Al llegar, todas las visitas ven la última imagen hasta las 00:00 UTC (01:00 en invierno en España).
