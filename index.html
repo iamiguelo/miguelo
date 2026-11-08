@@ -19,199 +19,158 @@
 <meta property="og:image" content="https://miguelo.com/assets/icon-512.png">
 <meta name="twitter:card" content="summary">
 <meta property="og:url" content="https://miguelo.com/">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=DM+Sans:wght@400;500;700&display=swap">
-<style>
-body{margin:0}
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-
-/* Layout: vídeo a sangre arriba, pasos, tarjeta de reserva en dos columnas que se apilan en móvil, pie naranja */
-:root{
-  --orange:#FF3919; --orange-ink:#C42A0E; --sun:#FFC93C;
-  --bg:#FFF6EE; --card:#FFFFFF; --soft:#FFF6EE; --fg:#1F1410; --muted:#5A4A43; --line:#EADFD6;
-  --stage:#1F1410;
-  --display:"Fredoka", "Arial Rounded MT Bold", system-ui, sans-serif;
-  --body:"DM Sans", system-ui, -apple-system, sans-serif;
-}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#17100D; --card:#221915; --soft:#2C211C; --fg:#FFF1E6; --muted:#CDBBB1; --line:#3E302A; --orange-ink:#FF6B4F; color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#17100D; --card:#221915; --soft:#2C211C; --fg:#FFF1E6; --muted:#CDBBB1; --line:#3E302A; --orange-ink:#FF6B4F; color-scheme:dark}
-
-*{box-sizing:border-box}
-html{height:100%}
-body{height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.5}
-h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
-a{color:inherit}
-:focus-visible{outline:3px solid var(--sun);outline-offset:3px;border-radius:8px}
-.wrap{max-width:1240px;margin:0 auto;padding-left:max(20px, env(safe-area-inset-left, 0px));padding-right:max(20px, env(safe-area-inset-right, 0px))}
-
-/* HERO: pantalla completa. Vídeo entero (contain) y el hueco sobrante toma el color de fondo del vídeo en cada momento */
-.hero{position:relative;width:100%;flex:1 1 auto;min-height:0;background:#FFFFFF;overflow:hidden}
-.hero.live .stage{display:none}
-.stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--orange)}
-.stage .rings{position:absolute;left:50%;top:50%;width:0;height:0}
-.stage .rings i{position:absolute;left:0;top:0;border:3px solid rgba(255,255,255,.55);border-radius:50%;transform:translate(-50%,-50%);width:40px;height:40px;animation:ring 4.8s cubic-bezier(.2,.7,.3,1) infinite;opacity:0}
-.stage .rings i:nth-child(2){animation-delay:1.2s}.stage .rings i:nth-child(3){animation-delay:2.4s}.stage .rings i:nth-child(4){animation-delay:3.6s}
-@keyframes ring{0%{width:40px;height:40px;opacity:.9}100%{width:1800px;height:1800px;opacity:0}}
-.stage .biglogo{width:min(70vw,760px);animation:pop 1.1s cubic-bezier(.3,1.6,.5,1) both}
-@keyframes pop{0%{transform:scale(.6) translateY(40px);opacity:0}100%{transform:none;opacity:1}}
-.vid{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .6s}
-.vid.ok{opacity:1}
-.vid.fg{object-fit:contain}
-.scroll{position:absolute;left:50%;bottom:calc(20px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#1F1410;background:rgba(255,255,255,.7);text-decoration:none;animation:hint 2.4s ease-in-out infinite;z-index:2}
-@keyframes hint{50%{transform:translate(-50%,6px)}}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 26px;border-radius:999px;border:0;font-family:var(--display);font-weight:600;font-size:19px;text-decoration:none;cursor:pointer;transition:transform .15s ease}
-.btn:hover{transform:translateY(-2px)}
-.btn:active{transform:translateY(1px) scale(.98)}
-.btn-white{background:#fff;color:#1F1410}
-.btn-ink{background:#1F1410;color:#fff}
-.btn-orange{background:var(--orange);color:#fff}
-.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
-
-.intro{padding-block:72px 8px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:28px}
-.intro .left{display:flex;flex-direction:column;gap:18px;align-items:flex-start;flex:1 1 480px;min-width:0}
-.intro .right{display:flex;flex-direction:column;gap:20px;align-items:flex-start;flex:0 1 380px;min-width:0}
-.intro h1 em{font-style:normal;color:var(--orange-ink)}
-.tag{background:var(--sun);color:#1F1410;font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;padding:8px 16px;border-radius:999px;transform:rotate(-3deg)}
-.intro h1{font-size:clamp(46px, 8vw, 104px);line-height:.95;letter-spacing:-.02em;font-weight:700;max-width:12ch}
-.intro p{margin:0;color:var(--muted);font-size:clamp(17px,2vw,21px);max-width:34ch}
-
-.badge{position:absolute;z-index:3;right:max(24px, env(safe-area-inset-right, 0px));bottom:-60px;width:150px;height:150px;border-radius:50%;background:var(--sun);animation:spin 18s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-@media (max-width:700px){.badge{width:100px;height:100px;bottom:-44px}}
-
-/* PASOS */
-.steps{padding-block:72px 32px}
-.steps h2{font-size:clamp(38px,5vw,60px);margin-bottom:36px}
-.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
-.step{background:var(--card);border-radius:28px;padding:32px;display:flex;flex-direction:column;gap:10px}
-.step:nth-child(2){transform:rotate(-1.2deg)}
-.step:nth-child(3){background:var(--sun);color:#1F1410}
-.step .n{font-family:var(--display);font-weight:700;font-size:60px;line-height:1;color:var(--orange)}
-.step:nth-child(3) .n{color:#1F1410}
-.step h3{font-size:26px;font-weight:600}
-.step p{margin:0;color:var(--muted)}
-.step:nth-child(3) p{color:#3A2C26}
-
-/* CITA */
-.book{padding-block:64px 104px}
-.card{background:var(--card);border-radius:36px;padding:clamp(22px,4vw,52px);display:flex;flex-direction:column;gap:36px}
-.card-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
-.card-head h2{font-size:clamp(38px,5vw,60px)}
-.card-head p{margin:0;color:var(--muted);max-width:40ch}
-.cols{display:flex;flex-wrap:wrap;gap:36px}
-.col{flex:1 1 400px;min-width:0;display:flex;flex-direction:column;gap:16px}
-.col h3{font-size:24px;font-weight:600}
-
-.types{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-.type{position:relative;text-align:left;background:var(--soft);border:2px solid transparent;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:10px;cursor:pointer;color:var(--fg);font-family:var(--body);transition:transform .15s, border-color .15s}
-.type:hover{transform:translateY(-3px)}
-.type .ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center}
-.type b{font-family:var(--display);font-weight:600;font-size:21px}
-.type span{font-size:14px;color:var(--muted)}
-.type .min{position:absolute;top:16px;right:16px;font-family:var(--display);font-weight:600;font-size:14px;background:var(--card);border-radius:999px;padding:4px 10px;color:var(--fg)}
-.type[aria-checked="true"]{border-color:var(--orange);background:var(--card);box-shadow:0 8px 0 var(--orange)}
-.type[aria-checked="true"] .min{background:var(--orange);color:#fff}
-
-.chips{display:flex;flex-wrap:wrap;gap:10px}
-.chip{min-height:46px;padding:0 18px;border-radius:999px;border:2px solid var(--line);background:var(--card);color:var(--fg);font-family:var(--display);font-weight:500;font-size:17px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .12s}
-.chip:hover{transform:translateY(-2px)}
-.chip[aria-pressed="true"]{background:var(--sun);border-color:var(--sun);color:#1F1410;transform:rotate(-2deg)}
-.chip[aria-pressed="true"]::before{content:"";width:8px;height:8px;border-radius:50%;background:#1F1410}
-
-.hours{display:flex;flex-direction:column;gap:12px}
-.hours small{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.hgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.hgrid button{min-height:46px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--fg);font-family:var(--display);font-weight:600;font-size:16px;cursor:pointer;font-variant-numeric:tabular-nums;padding:0}
-.hgrid button[aria-pressed="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
-.hint{margin:0;font-size:14px;color:var(--muted)}
-.days button.wkend{opacity:.3;cursor:default;background:transparent}
-
-.sheet{display:flex;flex-direction:column;align-items:center;background:#fff;color:#1F1410;border-radius:22px;overflow:hidden;width:150px;box-shadow:0 10px 0 rgba(0,0,0,.15);transform:rotate(-4deg)}
-.sheet .m{background:#1F1410;color:#fff;width:100%;text-align:center;font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;padding:8px 0}
-.sheet .d{font-family:var(--display);font-weight:700;font-size:68px;line-height:1;padding:10px 0 2px}
-.sheet .h{font-family:var(--display);font-weight:600;font-size:18px;padding-bottom:12px;color:#C42A0E}
-
-.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-.field{display:flex;flex-direction:column;gap:6px;font-weight:500;font-size:15px}
-.field.wide{grid-column:1/-1}
-input,textarea{font:inherit;color:var(--fg);background:var(--card);border:2px solid var(--line);border-radius:14px;min-height:50px;padding:0 14px}
-textarea{padding:12px 14px;min-height:90px;resize:vertical}
-input:focus,textarea:focus{border-color:var(--orange);outline:none}
-.err{color:var(--orange-ink);font-size:14px;font-weight:500;min-height:1em}
-
-.summary{background:#1F1410;color:#fff;border-radius:26px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
-.summary small{display:block;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--sun);font-weight:700}
-.summary strong{font-family:var(--display);font-weight:600;font-size:clamp(18px,2.4vw,24px)}
-.summary .btn{min-height:60px;font-size:21px}
-
-.done{background:var(--orange);color:#fff;border-radius:30px;padding:clamp(32px,6vw,64px) 24px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
-.done .tick{width:88px;height:88px;border-radius:50%;background:#fff;display:grid;place-items:center;animation:bob 3s ease-in-out infinite}
-@keyframes bob{50%{transform:translateY(-8px)}}
-.done h3{font-size:clamp(34px,5vw,50px);font-weight:700}
-.done p{margin:0;max-width:46ch}
-.done pre{white-space:pre-wrap;text-align:left;background:rgba(0,0,0,.18);border-radius:16px;padding:16px 18px;margin:0;font:inherit;font-size:15px;max-width:520px;width:100%;user-select:all}
-.done .acts{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-.btn-ghost{background:transparent;color:#fff;border:2px solid #fff}
-
-footer{flex:none;background:var(--orange);color:#fff}
-footer .wrap{max-width:none;padding-block:18px;display:flex;justify-content:space-between;align-items:center;gap:10px 28px;flex-wrap:wrap}
-footer img{height:30px;width:auto;display:block}
-footer .brand{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-footer .role{font-size:12px;letter-spacing:.22em;text-transform:uppercase}
-footer .contact{display:flex;gap:6px 24px;flex-wrap:wrap;font-family:var(--display);font-weight:600;font-size:19px}
-@media (max-width:600px){footer .wrap{padding-block:16px;flex-direction:column;justify-content:center;text-align:center;gap:10px}footer .brand{flex-direction:column;gap:6px}footer .role{font-size:11px;letter-spacing:.16em}footer .contact{justify-content:center;font-size:17px;gap:4px 18px}}
-footer .contact a{text-decoration:none;user-select:all}
-
-@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
-</style>
-
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Person","name":"Miguelo","url":"https://miguelo.com/","jobTitle":"Estratega Ecommerce e IA Creativa","description":"Estrategia ecommerce e IA creativa para marcas y tiendas online: SEO, contenidos, webs y automatizaciones. Hablemos: hola@miguelo.com","email":"mailto:hola@miguelo.com","telephone":"+34655207958","image":"https://miguelo.com/assets/icon-512.png","knowsAbout":["Ecommerce","Inteligencia artificial","SEO","Marketing de contenidos","Diseño web"]}
 </script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap">
+<link rel="preload" as="image" href="video/miguelo-tarjeta-final.jpg">
+<style>
+:root{--rojo:#FE3719;--tinta:#1d1d1f;--papel:#fbfaf8;--crema:#FFF6EE}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:"Poppins",system-ui,-apple-system,sans-serif;color:var(--tinta);-webkit-font-smoothing:antialiased;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 42%,#ffffff 0%,var(--crema) 55%,#f3e6da 100%);
+  min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+a{color:inherit;text-decoration:none}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* resplandor suave detrás de la tarjeta */
+body::before{content:"";position:fixed;left:50%;top:46%;width:min(120vw,900px);aspect-ratio:1;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(254,55,25,.16) 0%,rgba(254,55,25,0) 62%);pointer-events:none;z-index:0}
+
+/* tamaño: ancha en móvil, sin pasarse de alto en pantallas apaisadas */
+.escena{position:relative;z-index:1;width:min(92vw,680px,calc((100dvh - 170px) * 85 / 55));perspective:1600px;
+  animation:entrada 1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes entrada{from{opacity:0;transform:translateY(24px) scale(.96)}}
+.inclina{transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.flota{transform-style:preserve-3d;animation:flota 6s ease-in-out infinite}
+@keyframes flota{50%{transform:translateY(-8px)}}
+
+.tarjeta{position:relative;width:100%;aspect-ratio:85/55;cursor:pointer;transform-style:preserve-3d;
+  transition:transform .9s cubic-bezier(.2,.8,.2,1);-webkit-tap-highlight-color:transparent;outline:none}
+.tarjeta.girada{transform:rotateY(180deg)}
+.tarjeta:focus-visible .cara{box-shadow:0 0 0 3px #fff,0 0 0 6px var(--rojo)}
+
+.cara{position:absolute;inset:0;container-type:inline-size;border-radius:clamp(10px,2.2vw,16px);overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  box-shadow:0 50px 80px -35px rgba(120,30,0,.5),0 14px 28px -14px rgba(0,0,0,.25)}
+
+/* cara roja: el vídeo del logo */
+.delante{background:var(--rojo) url(video/miguelo-tarjeta-final.jpg) center/cover}
+.delante video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.delante .tagline{position:absolute;left:0;right:0;bottom:21%;text-align:center;color:#fff;
+  opacity:0;transform:translateY(8px);transition:opacity .8s ease,transform .8s ease}
+.delante.listo .tagline{opacity:1;transform:none}
+/* brillo que cruza la tarjeta al terminar el vídeo */
+.delante::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.28) 50%,transparent 65%);
+  transform:translateX(-120%);pointer-events:none}
+.delante.listo::after{animation:brillo 1.4s .3s ease-out}
+@keyframes brillo{to{transform:translateX(120%)}}
+
+/* cara blanca: contacto */
+.detras{background:var(--papel);transform:rotateY(180deg);padding:7% 8%;display:flex;flex-direction:column;justify-content:center;gap:5%}
+.detras img{width:46%;height:auto}
+.detras .tagline{color:#3a3a3c}
+.detras hr{border:0;height:2px;width:30%;background:var(--rojo)}
+.detras a{pointer-events:none}
+.tarjeta.girada .detras a{pointer-events:auto}
+.tarjeta.girada .delante{pointer-events:none}
+
+.tagline{font-size:clamp(8px,2.3cqw,14px);letter-spacing:.32em;text-transform:uppercase;font-weight:400;line-height:1.7}
+.contacto{display:flex;flex-direction:column;gap:clamp(6px,2.4cqw,14px)}
+.contacto a{display:inline-flex;align-items:center;gap:12px;font-size:clamp(13px,3.6cqw,20px);transition:color .2s;align-self:flex-start}
+.contacto a:hover{color:var(--rojo)}
+.contacto svg{width:clamp(16px,4cqw,22px);height:auto;flex:none;stroke:var(--rojo);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* debajo de la tarjeta */
+.bajo{position:relative;z-index:1;margin-top:clamp(28px,6vh,56px);display:flex;flex-direction:column;align-items:center;gap:14px;min-height:72px}
+.pista{color:#8a7a70;font-size:13px;letter-spacing:.08em;opacity:0;transition:opacity .6s}
+.pista.ver{opacity:1}
+.pista span{display:inline-block;animation:pulso 2s ease-in-out infinite}
+@keyframes pulso{50%{opacity:.45}}
+@media (hover:hover){.pista .t{display:none}} @media (hover:none){.pista .h{display:none}}
+.guardar{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--rojo);border:1.5px solid var(--rojo);border-radius:999px;padding:9px 18px;
+  opacity:0;transform:translateY(6px);transition:opacity .5s,transform .5s,background .2s,color .2s;pointer-events:none}
+body.contacto-visible .guardar{opacity:1;transform:none;pointer-events:auto}
+.guardar:hover{background:var(--rojo);color:#fff}
+
+footer{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom));text-align:center;font-size:11px;letter-spacing:.12em;color:#b3a398;z-index:1}
+
+@media (prefers-reduced-motion:reduce){
+  .tarjeta,.inclina{transition:none}
+  .escena,.flota,.pista span,.delante.listo::after{animation:none}
+}
+</style>
 </head>
 <body>
 <h1 class="sr-only">Miguelo, estratega de ecommerce e IA creativa para marcas y tiendas online</h1>
-<header class="hero" id="hero">
-  <div class="stage" aria-hidden="true">
-    <div class="rings"><i></i><i></i><i></i><i></i></div>
-    <img class="biglogo" src="assets/miguelo-logo-blanco.png" alt="">
-  </div>
-  <video class="vid fg" id="vfg" muted loop playsinline preload="auto" aria-hidden="true"></video>
-</header>
 
+<main class="escena" id="escena">
+  <div class="inclina" id="inclina"><div class="flota">
+    <div class="tarjeta" id="tarjeta" role="button" tabindex="0" aria-label="Tarjeta de miguelo: toca para ver el contacto">
+      <div class="cara delante" id="delante">
+        <video id="intro" src="video/miguelo-tarjeta.mp4" poster="video/miguelo-tarjeta-final.jpg" muted playsinline preload="auto" aria-hidden="true"></video>
+        <p class="tagline">Creative AI &amp; Ecommerce Strategist</p>
+      </div>
+      <div class="cara detras">
+        <img src="assets/miguelo-logo-naranja.png" alt="miguelo" width="1137" height="311">
+        <p class="tagline">Creative AI &amp;<br>Ecommerce Strategist</p>
+        <hr>
+        <div class="contacto">
+          <a href="mailto:hola@miguelo.com"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>hola@miguelo.com</a>
+          <a href="https://wa.me/34655207958" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp al 655 207 958"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>655.207.958</a>
+        </div>
+      </div>
+    </div>
+  </div></div>
+</main>
 
+<div class="bajo">
+  <p class="pista" id="pista"><span class="t">Toca la tarjeta ↻</span><span class="h">Haz clic en la tarjeta ↻</span></p>
+  <a class="guardar" href="miguelo.vcf" download="miguelo.vcf">Guardar contacto</a>
+</div>
 
-<footer id="contacto">
-  <div class="wrap">
-    <div class="brand"><img src="assets/miguelo-logo-blanco.png" alt="miguelo"><span class="role">Creative AI &amp; Ecommerce Strategist</span></div>
-    <div class="contact"><a href="mailto:hola@miguelo.com">hola@miguelo.com</a><a href="tel:+34655207958">655.207.958</a></div>
-  </div>
-</footer>
+<footer>© miguelo.com</footer>
 
 <script>
 (function(){
-  var hero=document.getElementById('hero'), v=document.getElementById('vfg');
-  var mq=window.matchMedia('(orientation: portrait)'), cur='';
-  var cv=document.createElement('canvas'); cv.width=cv.height=1;
-  var cx=cv.getContext('2d',{willReadFrequently:true});
-  function pick(){
-    var src=mq.matches?'video/miguelo-blanco-9x16.mp4':'video/miguelo-blanco-16x9.mp4';
-    if(src===cur) return; cur=src;
-    v.classList.remove('ok'); v.src=src; v.load();
-    v.oncanplay=function(){v.oncanplay=null;
-      var p=v.play(); if(p&&p.then)p.then(on,function(){}); else on();};
+  var tarjeta=document.getElementById('tarjeta'), delante=document.getElementById('delante'),
+      video=document.getElementById('intro'), pista=document.getElementById('pista'),
+      escena=document.getElementById('escena'), inclina=document.getElementById('inclina');
+
+  function listo(){delante.classList.add('listo');if(!tarjeta.classList.contains('girada'))pista.classList.add('ver');}
+  function reproducir(){
+    delante.classList.remove('listo');
+    try{video.currentTime=0;}catch(e){}
+    var p=video.play(); if(p&&p.catch)p.catch(listo); // si no deja reproducir, se ve la tarjeta terminada
   }
-  function on(){v.classList.add('ok');hero.classList.add('live');loop();}
-  // toma el color de la esquina del vídeo para rellenar el espacio sobrante
-  function sample(){
-    try{cx.drawImage(v,2,2,4,4,0,0,1,1);var d=cx.getImageData(0,0,1,1).data;
-      hero.style.backgroundColor='rgb('+d[0]+','+d[1]+','+d[2]+')';}catch(e){}
+  video.addEventListener('ended',listo);
+  video.addEventListener('error',listo);
+  setTimeout(function(){if(!delante.classList.contains('listo'))listo();},12000);
+  reproducir();
+
+  function girar(){
+    var volver=tarjeta.classList.contains('girada');
+    tarjeta.classList.toggle('girada');
+    document.body.classList.toggle('contacto-visible',!volver);
+    pista.classList.remove('ver');
+    if(volver)setTimeout(reproducir,450); // al volver a la cara roja, el logo se monta otra vez
   }
-  var raf=0,last=0;
-  function loop(){cancelAnimationFrame(raf);(function f(t){if(t-last>40){sample();last=t;}raf=requestAnimationFrame(f);})(0);}
-  if(mq.addEventListener)mq.addEventListener('change',pick);else mq.addListener(pick);
-  pick();
+  tarjeta.addEventListener('click',function(e){if(!e.target.closest('a'))girar();});
+  tarjeta.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();girar();}});
+
+  // en ordenador la tarjeta se inclina un poco siguiendo el ratón
+  if(matchMedia('(hover:hover) and (pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches){
+    document.addEventListener('mousemove',function(e){
+      var r=escena.getBoundingClientRect(),
+          x=(e.clientX-(r.left+r.width/2))/window.innerWidth, y=(e.clientY-(r.top+r.height/2))/window.innerHeight;
+      inclina.style.setProperty('--ry',(x*14).toFixed(2)+'deg');
+      inclina.style.setProperty('--rx',(-y*10).toFixed(2)+'deg');
+    });
+    document.addEventListener('mouseleave',function(){inclina.style.setProperty('--ry','0deg');inclina.style.setProperty('--rx','0deg');});
+  }
 })();
 </script>
 </body>

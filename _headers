@@ -2,3 +2,6 @@
   Cache-Control: public, max-age=604800
 /assets/*
   Cache-Control: public, max-age=604800
+/miguelo.vcf
+  Content-Type: text/vcard; charset=utf-8
+  Content-Disposition: attachment; filename="miguelo.vcf"
