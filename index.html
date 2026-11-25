@@ -112,6 +112,13 @@ footer{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bott
 body.con-fondo #fondo{opacity:1;transform:none}
 body.con-fondo footer{color:rgba(255,255,255,.85);text-shadow:0 1px 6px rgba(0,0,0,.35)}
 
+/* cristal: dentro de cada cara se ve el trozo del fondo que tapa la tarjeta, igual de difuminado pero más suave */
+.vidrio{position:absolute;inset:-8px;background-repeat:no-repeat;filter:blur(3px) saturate(1.1);opacity:0;transition:opacity 1.8s ease;pointer-events:none}
+.delante .vidrio{mix-blend-mode:soft-light} /* así el blanco del logo se queda blanco */
+body.con-fondo .delante .vidrio{opacity:var(--vidrio-roja,.75)}
+body.con-fondo .detras .vidrio{opacity:var(--vidrio-blanca,.22)}
+.detras>:not(.vidrio){position:relative}
+
 @media (prefers-reduced-motion:reduce){
   .tarjeta,.inclina{transition:none}
   .escena,.flota,.delante.listo::after,body.pide-toque .amago,body.pide-toque .dedo .mano,body.pide-toque .dedo .onda{animation:none}
@@ -127,9 +134,11 @@ body.con-fondo footer{color:rgba(255,255,255,.85);text-shadow:0 1px 6px rgba(0,0
     <div class="tarjeta" id="tarjeta" role="button" tabindex="0" aria-label="Tarjeta de miguelo: toca para ver el contacto">
       <div class="cara delante" id="delante">
         <video id="intro" src="video/miguelo-tarjeta.mp4?v=2" poster="video/miguelo-tarjeta-final.jpg" muted playsinline preload="auto" aria-hidden="true"></video>
+        <div class="vidrio" aria-hidden="true"></div>
         <p class="tagline">Creative AI &amp; Ecommerce Strategist</p>
       </div>
       <div class="cara detras">
+        <div class="vidrio" aria-hidden="true"></div>
         <img src="assets/miguelo-logo-naranja.png" alt="miguelo" width="1137" height="311">
         <p class="tagline">Creative AI &amp;<br>Ecommerce Strategist</p>
         <hr>
@@ -191,6 +200,25 @@ body.con-fondo footer{color:rgba(255,255,255,.85);text-shadow:0 1px 6px rgba(0,0
   tarjeta.addEventListener('click',function(e){if(!e.target.closest('a'))girar();});
   tarjeta.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();girar();}});
 
+  // cristal: coloca en cada cara el mismo trozo de fondo que queda detrás de la tarjeta
+  function cristal(url,iw,ih){
+    var capas=document.querySelectorAll('.vidrio'), i;
+    for(i=0;i<capas.length;i++)capas[i].style.backgroundImage='url('+url+')';
+    function ajustar(){
+      var vw=window.innerWidth, vh=window.innerHeight,
+          W=vw*1.06, H=vh*1.06, L=-vw*.03, T=-vh*.03, // #fondo: inset -3%, cover
+          s=Math.max(W/iw,H/ih), dw=iw*s, dh=ih*s, dx=L+(W-dw)/2, dy=T+(H-dh)/2,
+          r=escena.getBoundingClientRect(), o=8; // o = lo que sobresale la capa (inset -8px)
+      for(var j=0;j<capas.length;j++){
+        capas[j].style.backgroundSize=dw.toFixed(1)+'px '+dh.toFixed(1)+'px';
+        capas[j].style.backgroundPosition=(dx-r.left+o).toFixed(1)+'px '+(dy-r.top+o).toFixed(1)+'px';
+      }
+    }
+    ajustar();
+    window.addEventListener('resize',ajustar);
+    escena.addEventListener('animationend',ajustar);
+  }
+
   // fondo con IA: una imagen nueva en cada visita (no en conexiones con ahorro de datos)
   (function(){
     var c=navigator.connection; if(c&&c.saveData)return;
@@ -200,6 +228,7 @@ body.con-fondo footer{color:rgba(255,255,255,.85);text-shadow:0 1px 6px rgba(0,0
       return r.blob().then(function(b){
         var url=URL.createObjectURL(b), img=new Image();
         img.onload=function(){document.getElementById('fondo').style.backgroundImage='url('+url+')';
+          cristal(url,img.naturalWidth,img.naturalHeight);
           requestAnimationFrame(function(){document.body.classList.add('con-fondo');});};
         img.src=url;
       });
