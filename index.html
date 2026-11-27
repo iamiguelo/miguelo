@@ -31,20 +31,28 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{font-family:"Poppins",system-ui,-apple-system,sans-serif;color:var(--tinta);-webkit-font-smoothing:antialiased;overflow:hidden;
-  background:radial-gradient(ellipse at 50% 42%,#ffffff 0%,var(--crema) 55%,#f3e6da 100%);
-  min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  background:radial-gradient(ellipse at 50% 42%,#ffffff 0%,var(--crema) 55%,#f3e6da 100%);min-height:100dvh}
 a{color:inherit;text-decoration:none}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
-/* resplandor suave detrás de la tarjeta */
-body::before{content:"";position:fixed;left:50%;top:46%;width:min(120vw,900px);aspect-ratio:1;transform:translate(-50%,-50%);
-  background:radial-gradient(circle,rgba(254,55,25,.16) 0%,rgba(254,55,25,0) 62%);pointer-events:none;z-index:0}
+/* MODO VENTANA: la pantalla es una ventana. El "ojo" es el punto de fuga (perspective-origin) y se mueve
+   con el ratón, la cabeza (webcam) o el giroscopio. El fondo está lejos, detrás del cristal; la tarjeta,
+   un poco por delante. Como el plano de la pantalla (z = 0) no se mueve, es una proyección off-axis de verdad.
+   --P (distancia del ojo), --D (profundidad del fondo) y --F (lo que sale la tarjeta) los calcula el JS. */
+.ventana{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  perspective:var(--P,1200px);perspective-origin:calc(50% + var(--ox,0px)) calc(50% + var(--oy,0px))}
+
+/* resplandor suave detrás de la tarjeta (en el plano de la pantalla) */
+.resplandor{position:absolute;left:50%;top:46%;width:min(120vw,900px);aspect-ratio:1;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(254,55,25,.16) 0%,rgba(254,55,25,0) 62%);pointer-events:none}
 
 /* tamaño: ancha en móvil, sin pasarse de alto en pantallas apaisadas */
-.escena{position:relative;z-index:1;width:min(92vw,680px,calc((100dvh - 170px) * 85 / 55));perspective:1600px;
+.escena{position:relative;width:min(92vw,680px,calc((100dvh - 170px) * 85 / 55));perspective:1600px;
   animation:entrada 1s cubic-bezier(.2,.8,.2,1) both}
-@keyframes entrada{from{opacity:0;transform:translateY(24px) scale(.96)}}
+/* la tarjeta y el botón flotan delante del cristal; el scale compensa para que en el centro midan lo mismo que antes */
+.escena,.bajo{transform:translateZ(var(--F,0px)) scale(var(--sc,1))}
+@keyframes entrada{from{opacity:0;translate:0 24px;scale:.96}}
 .inclina{transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .flota{transform-style:preserve-3d;animation:flota 6s ease-in-out infinite}
 @keyframes flota{50%{transform:translateY(-8px)}}
@@ -107,9 +115,12 @@ body.contacto-visible .guardar{opacity:1;transform:none;pointer-events:auto}
 footer{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom));text-align:center;font-size:11px;letter-spacing:.12em;color:#b3a398;z-index:1;transition:color 1.6s}
 
 /* fondo generado con IA en cada visita (functions/bg.js); si no llega, se queda el fondo crema */
-#fondo{position:fixed;inset:-3%;z-index:-1;background:center/cover no-repeat;filter:blur(3px) saturate(1.1);transform:scale(1.04);
-  opacity:0;transition:opacity 1.8s ease,transform 6s cubic-bezier(.2,.8,.2,1);pointer-events:none}
-body.con-fondo #fondo{opacity:1;transform:none}
+/* el fondo vive lejos (translateZ negativo) y se agranda para seguir llenando la pantalla;
+   el margen (inset negativo) es lo que se puede "asomar" por los lados al mover el ojo */
+#fondo{position:absolute;inset:-28%;background:center/cover no-repeat;filter:blur(3px) saturate(1.1);
+  transform:translateZ(calc(var(--D,0px) * -1)) scale(var(--sf,1));scale:1.04;
+  opacity:0;transition:opacity 1.8s ease,scale 6s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+body.con-fondo #fondo{opacity:1;scale:1}
 body.con-fondo footer{color:rgba(255,255,255,.85);text-shadow:0 1px 6px rgba(0,0,0,.35)}
 
 /* cristal: dentro de cada cara se ve el trozo del fondo que tapa la tarjeta, igual de difuminado pero más suave */
@@ -119,15 +130,36 @@ body.con-fondo .delante .vidrio{opacity:var(--vidrio-roja,.75)}
 body.con-fondo .detras .vidrio{opacity:var(--vidrio-blanca,.22)}
 .detras>:not(.vidrio){position:relative}
 
+/* botón para activar el modo ventana con la webcam (solo ordenador) */
+.modo{position:fixed;z-index:3;top:calc(16px + env(safe-area-inset-top));right:calc(16px + env(safe-area-inset-right));
+  display:none;align-items:center;gap:8px;font:500 11px/1 "Poppins",system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--tinta);background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border:1px solid rgba(0,0,0,.08);border-radius:999px;padding:9px 14px 9px 11px;cursor:pointer;transition:background .2s,color .2s,opacity .6s;
+  opacity:0;animation:aparece .6s 2.2s forwards}
+@keyframes aparece{to{opacity:1}}
+.modo svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.modo .punto{width:7px;height:7px;border-radius:50%;background:#b3a398;transition:background .3s}
+.modo:hover{background:#fff}
+.modo[data-estado="on"] .punto{background:#25c26e;box-shadow:0 0 0 3px rgba(37,194,110,.2)}
+.modo[data-estado="cargando"] .punto{background:var(--rojo);animation:late 1s infinite}
+.modo[data-estado="error"] .punto{background:var(--rojo)}
+@keyframes late{50%{opacity:.3}}
+body.con-raton .modo{display:inline-flex}
+#camara{position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none}
+
 @media (prefers-reduced-motion:reduce){
+  .modo{animation:none;opacity:1}
   .tarjeta,.inclina{transition:none}
   .escena,.flota,.delante.listo::after,body.pide-toque .amago,body.pide-toque .dedo .mano,body.pide-toque .dedo .onda{animation:none}
 }
 </style>
 </head>
 <body>
-<div id="fondo" aria-hidden="true"></div>
 <h1 class="sr-only">Miguelo, estratega de ecommerce e IA creativa para marcas y tiendas online</h1>
+
+<div class="ventana" id="ventana">
+<div id="fondo" aria-hidden="true"></div>
+<div class="resplandor" aria-hidden="true"></div>
 
 <main class="escena" id="escena">
   <div class="inclina" id="inclina"><div class="flota"><div class="amago">
@@ -168,6 +200,14 @@ body.con-fondo .detras .vidrio{opacity:var(--vidrio-blanca,.22)}
   <p class="sr-only">Toca la tarjeta para ver el contacto</p>
   <a class="guardar" href="miguelo.vcf" download="miguelo.vcf">Guardar contacto</a>
 </div>
+</div>
+
+<button class="modo" id="modo" type="button" data-estado="off" title="Usa la cámara para seguir tu cabeza. Todo se procesa en tu navegador: no se graba ni se envía nada.">
+  <span class="punto" aria-hidden="true"></span>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+  <span class="texto">Activar modo ventana</span>
+</button>
+<video id="camara" muted playsinline aria-hidden="true"></video>
 
 <footer>© miguelo.com</footer>
 
@@ -200,24 +240,27 @@ body.con-fondo .detras .vidrio{opacity:var(--vidrio-blanca,.22)}
   tarjeta.addEventListener('click',function(e){if(!e.target.closest('a'))girar();});
   tarjeta.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();girar();}});
 
-  // cristal: coloca en cada cara el mismo trozo de fondo que queda detrás de la tarjeta
+  // cristal: coloca en cada cara el mismo trozo de fondo que queda detrás de la tarjeta.
+  // Como el fondo se mueve con el modo ventana, se recalcula en cada fotograma (ver bucle más abajo).
+  var fondoEl=document.getElementById('fondo'), capas=document.querySelectorAll('.vidrio'), imgFondo=null;
   function cristal(url,iw,ih){
-    var capas=document.querySelectorAll('.vidrio'), i;
-    for(i=0;i<capas.length;i++)capas[i].style.backgroundImage='url('+url+')';
-    function ajustar(){
-      var vw=window.innerWidth, vh=window.innerHeight,
-          W=vw*1.06, H=vh*1.06, L=-vw*.03, T=-vh*.03, // #fondo: inset -3%, cover
-          s=Math.max(W/iw,H/ih), dw=iw*s, dh=ih*s, dx=L+(W-dw)/2, dy=T+(H-dh)/2,
-          r=escena.getBoundingClientRect(), o=8; // o = lo que sobresale la capa (inset -8px)
-      for(var j=0;j<capas.length;j++){
-        capas[j].style.backgroundSize=dw.toFixed(1)+'px '+dh.toFixed(1)+'px';
-        capas[j].style.backgroundPosition=(dx-r.left+o).toFixed(1)+'px '+(dy-r.top+o).toFixed(1)+'px';
-      }
-    }
-    ajustar();
-    window.addEventListener('resize',ajustar);
-    escena.addEventListener('animationend',ajustar);
+    for(var i=0;i<capas.length;i++)capas[i].style.backgroundImage='url('+url+')';
+    imgFondo={w:iw,h:ih}; ajustarCristal();
   }
+  function ajustarCristal(){
+    if(!imgFondo)return;
+    var R=fondoEl.getBoundingClientRect(), Wb=fondoEl.offsetWidth, Hb=fondoEl.offsetHeight;
+    if(!Wb||!R.width)return;
+    var s=Math.max(Wb/imgFondo.w,Hb/imgFondo.h), q=R.width/Wb,          // cover dentro de #fondo y escala proyectada
+        dw=imgFondo.w*s*q, dh=imgFondo.h*s*q,                            // tamaño de la imagen en pantalla
+        dx=R.left+(R.width-dw)/2, dy=R.top+(R.height-dh)/2,              // su esquina en pantalla
+        r=escena.getBoundingClientRect(), k=escena.offsetWidth/(r.width||1), o=8; // pantalla -> píxeles de la tarjeta
+    for(var j=0;j<capas.length;j++){
+      capas[j].style.backgroundSize=(dw*k).toFixed(1)+'px '+(dh*k).toFixed(1)+'px';
+      capas[j].style.backgroundPosition=((dx-r.left)*k+o).toFixed(1)+'px '+((dy-r.top)*k+o).toFixed(1)+'px';
+    }
+  }
+  escena.addEventListener('animationend',ajustarCristal);
 
   // fondo con IA: una imagen nueva en cada visita (no en conexiones con ahorro de datos)
   (function(){
@@ -235,15 +278,154 @@ body.con-fondo .detras .vidrio{opacity:var(--vidrio-blanca,.22)}
     }).catch(function(){});
   })();
 
-  // en ordenador la tarjeta se inclina un poco siguiendo el ratón
-  if(matchMedia('(hover:hover) and (pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches){
+  /* ================= MODO VENTANA =================
+     El "ojo" (ox, oy en píxeles respecto al centro de la pantalla) mueve el punto de fuga de .ventana.
+     Fuentes: ratón (ordenador, por defecto) · cabeza con la webcam (ordenador, si se activa) · giroscopio (móvil). */
+  var AJUSTES={
+    distanciaOjo:1.2,     // P = 1,2 × el lado largo de la pantalla
+    profFondo:.9,         // el fondo está a 0,9 P detrás del cristal
+    salidaTarjeta:.1,     // la tarjeta sale 0,1 P hacia delante
+    maxX:.4, maxY:.4,     // el ojo no se aleja más de 0,4 pantallas del centro
+    raton:.5,             // ratón en el borde = ojo a 0,25 pantallas del centro
+    cara:1.6,             // webcam: cuánto se amplifica el movimiento de la cabeza
+    giro:.4,              // giroscopio: 1 = geometría real (demasiado fuerte en móvil)
+    suave:.06             // suavizado (0..1, más alto = más rápido)
+  };
+  var ventana=document.getElementById('ventana'), reducido=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var P=1200, vw=1, vh=1, ojo={x:0,y:0}, meta={x:0,y:0}, fuente='raton';
+
+  function medidas(){
+    vw=window.innerWidth; vh=window.innerHeight;
+    P=Math.round(Math.max(vw,vh)*AJUSTES.distanciaOjo);
+    var D=P*AJUSTES.profFondo, F=P*AJUSTES.salidaTarjeta;
+    ventana.style.setProperty('--P',P+'px');
+    ventana.style.setProperty('--D',D.toFixed(0)+'px');
+    ventana.style.setProperty('--sf',((P+D)/P).toFixed(4));   // el fondo lejos se ve más pequeño: lo compensamos
+    ventana.style.setProperty('--F',F.toFixed(0)+'px');
+    ventana.style.setProperty('--sc',((P-F)/P).toFixed(4));   // la tarjeta cerca se ve más grande: lo compensamos
+    ajustarCristal();
+  }
+  medidas(); window.addEventListener('resize',medidas);
+
+  function apuntar(x,y){ // x, y en píxeles; se limita al rango permitido
+    meta.x=Math.max(-vw*AJUSTES.maxX,Math.min(vw*AJUSTES.maxX,x));
+    meta.y=Math.max(-vh*AJUSTES.maxY,Math.min(vh*AJUSTES.maxY,y));
+  }
+
+  // bucle: acerca el ojo a su objetivo con suavidad y solo toca el DOM si hay cambio
+  var ultimo={x:1e9,y:1e9}; // fuera de rango para que el primer fotograma siempre pinte
+  function bucle(){
+    ojo.x+=(meta.x-ojo.x)*AJUSTES.suave; ojo.y+=(meta.y-ojo.y)*AJUSTES.suave;
+    if(Math.abs(ojo.x-ultimo.x)>.05||Math.abs(ojo.y-ultimo.y)>.05){
+      ventana.style.setProperty('--ox',ojo.x.toFixed(2)+'px');
+      ventana.style.setProperty('--oy',ojo.y.toFixed(2)+'px');
+      ultimo.x=ojo.x; ultimo.y=ojo.y; ajustarCristal();
+    }
+    requestAnimationFrame(bucle);
+  }
+  if(!reducido)requestAnimationFrame(bucle);
+
+  var esOrdenador=matchMedia('(hover:hover) and (pointer:fine)').matches;
+
+  // ---- 1) RATÓN (ordenador, por defecto)
+  if(esOrdenador&&!reducido){
+    document.body.classList.add('con-raton');
     document.addEventListener('mousemove',function(e){
-      var r=escena.getBoundingClientRect(),
-          x=(e.clientX-(r.left+r.width/2))/window.innerWidth, y=(e.clientY-(r.top+r.height/2))/window.innerHeight;
-      inclina.style.setProperty('--ry',(x*14).toFixed(2)+'deg');
-      inclina.style.setProperty('--rx',(-y*10).toFixed(2)+'deg');
+      if(fuente!=='raton')return;
+      apuntar((e.clientX/vw-.5)*vw*AJUSTES.raton,(e.clientY/vh-.5)*vh*AJUSTES.raton);
     });
-    document.addEventListener('mouseleave',function(){inclina.style.setProperty('--ry','0deg');inclina.style.setProperty('--rx','0deg');});
+    document.documentElement.addEventListener('mouseleave',function(){if(fuente==='raton')apuntar(0,0);});
+  }
+
+  // ---- 2) CABEZA CON LA WEBCAM (ordenador, solo si se pulsa el botón). MediaPipe se carga en ese momento.
+  var boton=document.getElementById('modo'), textoBoton=boton.querySelector('.texto'), cam=document.getElementById('camara'),
+      flujo=null, detector=null, camOn=false, ultimaCara=0;
+  var MP='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.3';
+  var MODELO='https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite';
+  function estado(e,t){boton.dataset.estado=e;textoBoton.textContent=t;}
+  function apagarCamara(){
+    camOn=false; fuente='raton'; apuntar(0,0);
+    if(flujo){flujo.getTracks().forEach(function(t){t.stop();});flujo=null;}
+    estado('off','Activar modo ventana');
+  }
+  async function encenderCamara(){
+    estado('cargando','Cargando…');
+    try{
+      flujo=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});
+      cam.srcObject=flujo; await cam.play();
+      if(!detector){
+        var vision=await import(MP+'/vision_bundle.mjs');
+        var archivos=await vision.FilesetResolver.forVisionTasks(MP+'/wasm');
+        var opciones=function(d){return{baseOptions:{modelAssetPath:MODELO,delegate:d},runningMode:'VIDEO',minDetectionConfidence:.5};};
+        try{detector=await vision.FaceDetector.createFromOptions(archivos,opciones('GPU'));}
+        catch(e){detector=await vision.FaceDetector.createFromOptions(archivos,opciones('CPU'));}
+      }
+      if(!flujo)return; // se apagó mientras cargaba
+      camOn=true; fuente='cara'; ultimaCara=performance.now();
+      estado('on','Modo ventana: activo');
+      seguirCara();
+    }catch(e){
+      if(flujo){flujo.getTracks().forEach(function(t){t.stop();});flujo=null;}
+      fuente='raton'; estado('error','Sin cámara · usando el ratón');
+      setTimeout(function(){if(!camOn)estado('off','Activar modo ventana');},3500);
+    }
+  }
+  var ultimoFrame=-1;
+  function seguirCara(){
+    if(!camOn)return;
+    var ahora=performance.now();
+    if(cam.readyState>=2&&cam.currentTime!==ultimoFrame){
+      ultimoFrame=cam.currentTime;
+      var res=detector.detectForVideo(cam,ahora), d=res&&res.detections&&res.detections[0];
+      if(d&&d.keypoints&&d.keypoints.length>1){
+        // punto medio entre los ojos (coordenadas 0..1 de la imagen de la cámara, que está en espejo)
+        var cx=(d.keypoints[0].x+d.keypoints[1].x)/2, cy=(d.keypoints[0].y+d.keypoints[1].y)/2;
+        var escala=Math.max(vw,vh)*AJUSTES.cara/2;
+        apuntar((.5-cx)*escala*2,(cy-.5)*escala*1.5);
+        ultimaCara=ahora;
+      }else if(ahora-ultimaCara>300){apuntar(0,0);} // si se pierde la cara, vuelve suave al centro
+    }
+    requestAnimationFrame(seguirCara);
+  }
+  if(esOrdenador&&!reducido&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){
+    boton.addEventListener('click',function(){
+      if(boton.dataset.estado==='cargando')return;
+      if(camOn)apagarCamara(); else encenderCamara();
+    });
+  }else{boton.remove();}
+
+  // ---- 3) GIROSCOPIO (móvil). En iPhone hay que pedir permiso con un toque: el primer toque solo activa el efecto.
+  var esMovil=matchMedia('(hover:none) and (pointer:coarse)').matches;
+  if(esMovil&&!reducido&&'DeviceOrientationEvent' in window){
+    var base=null;
+    var dif=function(a,b){var d=a-b;while(d>180)d-=360;while(d<-180)d+=360;return d;};
+    var rad=Math.PI/180;
+    var primerToque=null;
+    var alGirar=function(e){
+      if(e.beta==null||e.gamma==null)return;
+      // ya llegan datos: no hace falta pedir permiso, el primer toque vuelve a girar la tarjeta
+      if(primerToque){document.removeEventListener('click',primerToque,true);primerToque=null;}
+      if(!base)base={b:e.beta,g:e.gamma};
+      // la posición "de reposo" se adapta despacio a cómo sujetas el móvil
+      base.b+=dif(e.beta,base.b)*.006; base.g+=dif(e.gamma,base.g)*.006;
+      var db=dif(e.beta,base.b), dg=dif(e.gamma,base.g), sx, sy,
+          ang=(screen.orientation&&screen.orientation.angle)||window.orientation||0;
+      ang=((ang%360)+360)%360;
+      if(ang===90){sx=-db;sy=dg;}else if(ang===180){sx=-dg;sy=-db;}else if(ang===270){sx=db;sy=-dg;}else{sx=dg;sy=db;}
+      fuente='giro';
+      apuntar(-P*Math.sin(sx*rad)*AJUSTES.giro,-P*Math.sin(sy*rad)*AJUSTES.giro);
+    };
+    // se escucha desde el principio (Android antiguo no pide permiso)...
+    window.addEventListener('deviceorientation',alGirar);
+    // ...y si el navegador exige permiso (iPhone y Chrome recientes), el primer toque solo sirve para pedirlo
+    if(typeof DeviceOrientationEvent.requestPermission==='function'){
+      primerToque=function(e){
+        document.removeEventListener('click',primerToque,true); primerToque=null;
+        e.stopPropagation(); e.preventDefault(); // este toque no gira la tarjeta
+        DeviceOrientationEvent.requestPermission().catch(function(){});
+      };
+      document.addEventListener('click',primerToque,true);
+    }
   }
 })();
 </script>

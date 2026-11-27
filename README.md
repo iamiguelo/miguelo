@@ -10,13 +10,13 @@ Es una web estática servida por un Worker de Cloudflare (static assets) desde l
 - `miguelo.vcf`: contacto para guardar en la agenda
 - `assets/`: logos
 
-## Prototipo: modo ventana (`ventana.html` → miguelo.com/ventana)
+## Modo ventana
 
-Copia de la portada con efecto "ventana" (proyección off-axis hecha con CSS 3D: `perspective-origin` = posición del ojo). El fondo de IA está lejos, detrás del cristal, y la tarjeta un poco por delante. Oculta a buscadores (`noindex` y `robots.txt`).
+La portada tiene efecto "ventana" (proyección off-axis hecha con CSS 3D: `perspective-origin` = posición del ojo). El fondo de IA está lejos, detrás del cristal, y la tarjeta un poco por delante.
 
 - Ordenador: el ratón mueve el ojo. El botón "Activar modo ventana" enciende la webcam y sigue la cabeza con MediaPipe Face Detector (se carga solo al pulsarlo, desde jsDelivr; todo en el navegador).
 - Móvil: giroscopio. Si el navegador pide permiso (iPhone, Chrome reciente), el primer toque solo lo pide; después la tarjeta gira como siempre.
-- Los números del efecto están en el objeto `AJUSTES` del script.
+- La intensidad y la suavidad están en el objeto `AJUSTES` del script.
 
 ## Fondo con IA (`worker/bg.js`)
 
