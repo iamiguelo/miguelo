@@ -115,10 +115,11 @@ body.contacto-visible .guardar{opacity:1;transform:none;pointer-events:auto}
 footer{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom));text-align:center;font-size:11px;letter-spacing:.12em;color:#b3a398;z-index:1;transition:color 1.6s}
 
 /* fondo generado con IA en cada visita (functions/bg.js); si no llega, se queda el fondo crema */
-/* el fondo vive lejos (translateZ negativo) y se agranda para seguir llenando la pantalla;
-   el margen (inset negativo) es lo que se puede "asomar" por los lados al mover el ojo */
-#fondo{position:absolute;inset:-28%;background:center/cover no-repeat;filter:blur(3px) saturate(1.1);
-  transform:translateZ(calc(var(--D,0px) * -1)) scale(var(--sf,1));scale:1.04;
+/* el fondo está "lejos": un plano paralelo a la pantalla a profundidad D solo se desplaza ojo × D/(P+D),
+   así que lo movemos en 2D con esa cuenta (--bx, --by): se ve igual que en 3D pero la capa es casi
+   del tamaño de la pantalla y el navegador la pinta al momento. El margen es lo que se puede asomar. */
+#fondo{position:absolute;inset:-20%;background:center/cover no-repeat;filter:blur(3px) saturate(1.1);
+  transform:translate3d(var(--bx,0px),var(--by,0px),0);scale:1.04;will-change:transform;
   opacity:0;transition:opacity 1.8s ease,scale 6s cubic-bezier(.2,.8,.2,1);pointer-events:none}
 body.con-fondo #fondo{opacity:1;scale:1}
 body.con-fondo footer{color:rgba(255,255,255,.85);text-shadow:0 1px 6px rgba(0,0,0,.35)}
@@ -292,15 +293,14 @@ body.con-raton .modo{display:inline-flex}
     suave:.06             // suavizado (0..1, más alto = más rápido)
   };
   var ventana=document.getElementById('ventana'), reducido=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  var P=1200, vw=1, vh=1, ojo={x:0,y:0}, meta={x:0,y:0}, fuente='raton';
+  var P=1200, vw=1, vh=1, kFondo=.47, ojo={x:0,y:0}, meta={x:0,y:0}, fuente='raton';
 
   function medidas(){
     vw=window.innerWidth; vh=window.innerHeight;
     P=Math.round(Math.max(vw,vh)*AJUSTES.distanciaOjo);
     var D=P*AJUSTES.profFondo, F=P*AJUSTES.salidaTarjeta;
+    kFondo=D/(P+D);                                           // cuánto se desplaza el fondo por cada píxel de ojo
     ventana.style.setProperty('--P',P+'px');
-    ventana.style.setProperty('--D',D.toFixed(0)+'px');
-    ventana.style.setProperty('--sf',((P+D)/P).toFixed(4));   // el fondo lejos se ve más pequeño: lo compensamos
     ventana.style.setProperty('--F',F.toFixed(0)+'px');
     ventana.style.setProperty('--sc',((P-F)/P).toFixed(4));   // la tarjeta cerca se ve más grande: lo compensamos
     ajustarCristal();
@@ -319,6 +319,8 @@ body.con-raton .modo{display:inline-flex}
     if(Math.abs(ojo.x-ultimo.x)>.05||Math.abs(ojo.y-ultimo.y)>.05){
       ventana.style.setProperty('--ox',ojo.x.toFixed(2)+'px');
       ventana.style.setProperty('--oy',ojo.y.toFixed(2)+'px');
+      ventana.style.setProperty('--bx',(ojo.x*kFondo).toFixed(2)+'px');
+      ventana.style.setProperty('--by',(ojo.y*kFondo).toFixed(2)+'px');
       ultimo.x=ojo.x; ultimo.y=ojo.y; ajustarCristal();
     }
     requestAnimationFrame(bucle);
